@@ -22,10 +22,10 @@ def signup_page(request):
         # check if email or username already exists
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already exists.")
-            return redirect('/register/')
+            return redirect('/signup/')
         if User.objects.filter(username=anonymousname).exists():
             messages.error(request, "Username already exists.")
-            return redirect('/register/')
+            return redirect('/signup/')
 
         # save data to database
         user = User.objects.create(
@@ -38,9 +38,9 @@ def signup_page(request):
         messages.success(request, "Account created successfully.")
         
         # redirect to sign in page.
-        return redirect('/register/')
+        return redirect('/signup/')
 
-    return render(request, 'register.html', context)
+    return render(request, 'signup.html', context)
 
 
 def login_page(request):
