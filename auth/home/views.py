@@ -1,11 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
+from django.contrib import messages
 
 # Create your views here.
+
 def home(request):
     context = {'page' : 'Home'}
     return render(request, 'index.html', context)
+
 
 def signup_page(request):
     context = {'page' : 'Sign Up'}
@@ -15,16 +18,30 @@ def signup_page(request):
         email = request.POST.get('email')
         anonymousname = request.POST.get('anonymousname')
         password = request.POST.get('password')
-        address = request.POST.get('address')
-        avatar = request.FILES.get('avatar')
+
+        # check if email or username already exists
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "Email already exists.")
+            return redirect('/register/')
+        if User.objects.filter(username=anonymousname).exists():
+            messages.error(request, "Username already exists.")
+            return redirect('/register/')
 
         # save data to database
-        user = User.objects.create_user(email=email, username=username, password=password)
+        user = User.objects.create(
+            email=email, 
+            username=anonymousname
+        )
+        user.set_password(password)
         user.save()
 
-        # return to home page
-        return HttpResponse("Hello from signup view")
+        messages.success(request, "Account created successfully.")
+        
+        # redirect to sign in page.
+        return redirect('/register/')
+
     return render(request, 'register.html', context)
+
 
 def login_page(request):
     context = {'page' : 'Sign'}
