@@ -7,10 +7,11 @@ def home(request):
     return render(request, 'index.html', context)
 
 def signup_page(request):
-    return HttpResponse("Hello from signup view")
+    context = {'page' : 'Sign Up'}
+    return render(request, 'register.html', context)
 
 def login_page(request):
-    context = {'page' : 'Login'}
+    context = {'page' : 'Sign'}
     return render(request, 'login.html', context)
 
 def logout_page(request):

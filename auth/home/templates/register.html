@@ -7,7 +7,10 @@
           method="post"
           enctype="multipart/form-data">
         {% csrf_token %}
-        <h1 class="text-center p-3">Sign in</h1>
+        <div class="text-center p-3">
+            <h1 class="text-center">Create an account</h1>
+            <p class="form-text">Create your account to continue to your course.</p>
+        </div>
         <div class="mb-3">
             <label for="emailHelp"
                    class="form-text">Your email address(student email)</label>
@@ -16,6 +19,18 @@
                    id="email"
                    name="email"
                    aria-describedby="emailHelp">
+        </div>
+        <div class="mb-3">
+            <label for="nameHelp"
+                   class="form-text">Anonoymous name</label>
+            <input type="text"
+                   class="form-control"
+                   id="name"
+                   name="name"
+                   aria-describedby="nameHelp">
+            <div id="nameHelp"
+                 class="form-text">We strongly recommend that you use anonymous name. This will help secure your
+                identity and help you safely learn and explore.</div>
         </div>
         <div class="mb-3">
             <label for="InputPassword1"
