@@ -45,7 +45,7 @@ def signup_page(request):
 
 def login_page(request):
     context = {'page' : 'Sign'}
-    return render(request, 'login.html', context)
+    return render(request, 'signin.html', context)
 
 def logout_page(request):
     return HttpResponse("Hello from logout view")
