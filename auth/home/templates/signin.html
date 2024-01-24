@@ -3,34 +3,44 @@
 {% block content %}
 
 <div class="container mt-5">
-    <form class="col-6 mx-auto card p-5 shadow-lg rounded-4"
-          method="post"
-          enctype="multipart/form-data">
-        {% csrf_token %}
-        <h1 class="text-center p-3">Sign in</h1>
-        <div class="mb-3">
-            <label for="emailHelp"
-                   class="form-text">Your email address(student email)</label>
-            <input type="email"
-                   class="form-control"
-                   id="email"
-                   name="email"
-                   aria-describedby="emailHelp">
-        </div>
-        <div class="mb-3">
-            <label for="InputPassword1"
-                   class="form-text">Password</label>
-            <input type="password"
-                   class="form-control"
-                   id="password"
-                   name="password">
-        </div>
-        <button type="submit"
-                class="btn btn-primary">Login</button>
-        <div class="form-text"> By continuing you agree to Terms of use and Privacy Policy.</div>
+       <form class="col-6 mx-auto card p-5 shadow-lg rounded-4"
+             method="post"
+             enctype="multipart/form-data">
+              {% csrf_token %}
+              <h1 class="text-center p-3">Sign in</h1>
 
-        <div class="form-text"> Forget Password? <a href="#">Reset here</a></div>
-    </form>
+              {% if messages %}
+              <div class="alert alert-primary"
+                   role="alert">
+                     {% for message in messages %}
+                     {{ message }}
+                     {% endfor %}
+              </div>
+              {% endif %}
+
+              <div class="mb-3">
+                     <label for="emailHelp"
+                            class="form-text">Your email address(student email)</label>
+                     <input type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+                            aria-describedby="emailHelp">
+              </div>
+              <div class="mb-3">
+                     <label for="InputPassword1"
+                            class="form-text">Password</label>
+                     <input type="password"
+                            class="form-control"
+                            id="password"
+                            name="password">
+              </div>
+              <button type="submit"
+                      class="btn btn-primary">Login</button>
+              <div class="form-text"> By continuing you agree to Terms of use and Privacy Policy.</div>
+
+              <div class="form-text"> Forget Password? <a href="#">Reset here</a></div>
+       </form>
 
 </div>
 

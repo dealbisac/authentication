@@ -55,18 +55,21 @@ def login_page(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
 
-        # check if email or username already exists
-        if User.objects.filter(email=email).exists():
-            user = User.objects.get(email=email)
-            if user.check_password(password):
-                messages.success(request, "Login successful.")
-                return redirect('/profile/')
-            else:
-                messages.error(request, "Invalid password.")
-                return redirect('/login/')
-        else:
-            messages.error(request, "Email does not exist.")
+        # check if email exists in database
+        if not User.objects.filter(email=email).exists():
+            messages.error(request, "Invalid email. Use your own student email.")
             return redirect('/login/')
+        
+        # authenticate user
+        user = authenticate(email=email, password=password)
+
+        if user is None:
+            messages.error(request, "Invalid credentials.")
+            return redirect('/login/')
+        else:
+            login(request, user)
+            return redirect('/profile/')
+        
     return render(request, 'signin.html', context)
 
 # Logout page view
