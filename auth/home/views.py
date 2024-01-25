@@ -15,6 +15,7 @@ def home(request):
     return render(request, 'index.html', context)
 
 
+
 # Sign up page view
 def signup_page(request):
     context = {'page' : 'Sign Up'}
@@ -77,7 +78,7 @@ def login_page(request):
 
 # Logout page view
 def logout_page(request):
-    #logout(request)
+    logout(request)
     return redirect('/login/')
 
 def profile_page(request):
