@@ -19,6 +19,8 @@
 </head>
 
 <body>
+
+      {% if request.user.is_authenticated %}
       <!-- Navbar -->
       <nav class="navbar navbar-expand-lg"
            style="background-color: #e3f2fd;">
@@ -42,20 +44,15 @@
                                        href="#">Profile</a>
                               </li>
                         </ul>
-                        {% if request.user.is.authenticated %}
-                        <p>Hi, {{ request.user.username }}</p>
+                        <p class="form-inline my-2 my-lg-0 p-lg-2">Hi,
+                              <span class="text-decoration-underline">{{request.user.username}}</span>
+                        </p>
                         <a href="/logout/"
                            class="btn btn-outline-success">Logout</a>
-                        {% else %}
-                        <a href="/login/"
-                           class="btn btn-outline-success">Login</a>
-                        {% endif %}
                   </div>
             </div>
       </nav>
-
-
-
+      {% endif %}
 
       {% block content %}
 

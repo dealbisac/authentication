@@ -4,11 +4,13 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
+from django.contrib.auth.decorators import login_required
 
 User = get_user_model()
 
 # Create your views here.
 
+@login_required(login_url='/login/')
 # Home page view
 def home(request):
     context = {'page' : 'Home'}
@@ -72,7 +74,7 @@ def login_page(request):
             return redirect('/login/')
         else:
             login(request, user)
-            return redirect('/profile/')
+            return redirect('/dashboard/')
         
     return render(request, 'signin.html', context)
 
@@ -81,8 +83,11 @@ def logout_page(request):
     logout(request)
     return redirect('/login/')
 
+@login_required(login_url='/login/')
+# Profile page view
 def profile_page(request):
-    return HttpResponse("Hello from profile view")
+    context = {'page' : 'Profile'}
+    return render(request, 'profile.html', context)
 
 def edit_profile_page(request):
     return HttpResponse("Hello from edit profile view")
@@ -96,6 +101,7 @@ def reset_password_page(request):
 def change_password_page(request):
     return HttpResponse("Hello from change password view")
 
+@login_required(login_url='/login/')
 def admin_page(request):
     context = {'page' : 'Dashboard'}
     return render(request, 'admin.html', context)
