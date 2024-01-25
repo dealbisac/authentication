@@ -5,6 +5,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
+from auth import settings
+from django.core.mail import send_mail
+
 
 User = get_user_model()
 
@@ -45,7 +48,15 @@ def signup_page(request):
         user.save()
 
         messages.success(request, "Account created successfully.")
-        
+
+        # Email Message to user
+        subject = "Welcome to Course 101"
+        message = "Hi " + anonymousname + ",\n\nWelcome to Course 101. We are glad to have you here. \n\nRegards,\nCourse 101 Team"
+        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+        to_email = [email]
+        send_mail(subject, message, from_email, to_email, fail_silently=False)
+
+
         # redirect to sign in page.
         return redirect('/signup/')
 
@@ -78,10 +89,12 @@ def login_page(request):
         
     return render(request, 'signin.html', context)
 
+
 # Logout page view
 def logout_page(request):
     logout(request)
     return redirect('/login/')
+
 
 @login_required(login_url='/login/')
 # Profile page view
