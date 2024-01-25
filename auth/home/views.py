@@ -97,7 +97,8 @@ def forgot_password_page(request):
     return render(request, 'forgot-password.html', context)
 
 def reset_password_page(request):
-    return HttpResponse("Hello from reset password view")
+    context = {'page' : 'Reset Password'}
+    return render(request, 'reset-password.html', context)
 
 def change_password_page(request):
     return HttpResponse("Hello from change password view")
