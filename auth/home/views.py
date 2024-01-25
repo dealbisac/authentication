@@ -92,3 +92,10 @@ def forgot_password_page(request):
 
 def reset_password_page(request):
     return HttpResponse("Hello from reset password view")
+
+def change_password_page(request):
+    return HttpResponse("Hello from change password view")
+
+def admin_page(request):
+    context = {'page' : 'Dashboard'}
+    return render(request, 'admin.html', context)

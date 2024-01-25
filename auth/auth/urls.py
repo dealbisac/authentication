@@ -41,4 +41,5 @@ urlpatterns = [
     path('edit-profile/', edit_profile_page, name='edit-profile'),
     path('forgot-password/', forgot_password_page, name='forgot-password'),
     path('reset-password/', reset_password_page, name='reset-password'),
+    path('dashboard/', admin_page, name='admin-page'),
 ]
