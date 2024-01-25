@@ -93,7 +93,8 @@ def edit_profile_page(request):
     return HttpResponse("Hello from edit profile view")
 
 def forgot_password_page(request):
-    return HttpResponse("Hello from forgot password view")
+    context = {'page' : 'Forgot Password'}
+    return render(request, 'forgot-password.html', context)
 
 def reset_password_page(request):
     return HttpResponse("Hello from reset password view")
