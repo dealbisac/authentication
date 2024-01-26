@@ -17,12 +17,19 @@ from . info import *
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_USE_TLS = EMAIL_USE_TLS
 EMAIL_HOST = EMAIL_HOST
 EMAIL_HOST_USER = EMAIL_HOST_USER
 EMAIL_HOST_PASSWORD = EMAIL_APP_PASSWORD
 EMAIL_PORT = EMAIL_PORT
 
+#Outlook Settings
+OUTLOOK_USE_TLS = OUTLOOK_USE_TLS
+OUTLOOK_HOST = OUTLOOK_HOST
+OUTLOOK_HOST_USER = OUTLOOK_HOST_USER
+OUTLOOK_HOST_PASSWORD = OUTLOOK_HOST_PASSWORD
+OUTLOOK_PORT = OUTLOOK_PORT
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
