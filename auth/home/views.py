@@ -13,7 +13,6 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from accounts.tokens import app_token_generator
-from django.contrib.auth.hashers import make_password
 
 
 User = get_user_model()
@@ -156,7 +155,8 @@ def reset_password_page(request, uidb64, token):
     context = {'page' : 'Reset Password'}
 
     try:
-        email = force_str(urlsafe_b64decode(uidb64))
+        # data from url (fix: TypeError: a bytes-like object is required, not 'str')
+        email = request.POST.get('email') if request.method == 'POST' else None
         user = User.objects.get(email=email)
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
@@ -169,9 +169,10 @@ def reset_password_page(request, uidb64, token):
         if password != confirm_password:
             messages.error(request, "Password and Confirm Password do not match.")
             return redirect('/reset-password/'+uidb64+'/'+token)
+
         
-        # user.set_password(password)
-        user.password = make_password('password')
+        # save data to database
+        user.set_password(password)
         user.save()
 
         messages.success(request, "Password reset successfully. You can now login.")
