@@ -1,4 +1,5 @@
 from base64 import urlsafe_b64decode
+from smtplib import SMTP
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -13,6 +14,7 @@ from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from accounts.tokens import app_token_generator
+from redmail import outlook, EmailSender
 
 
 User = get_user_model()
@@ -58,7 +60,8 @@ def signup_page(request):
         # Email Message to user
         subject = "Welcome to Course 101"
         message = "Hi " + anonymousname + ",\n\nWelcome to Course 101. We are glad to have you here. \n\nRegards,\nCourse 101 Team"
-        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+        #from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+        from_email = "Course 101 < no-reply@chattutor.dk >"
         to_email = [email]
         send_mail(subject, message, from_email, to_email, fail_silently=False)
 
@@ -125,7 +128,7 @@ def forgot_password_page(request):
         # send email to user with reset password link
         current_site = get_current_site(request)
         subject = "Reset Your Password."
-        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+        from_email = "Course 101 < no-reply@chattutor.dk >"
         message = render_to_string('reset-password-email.html', {
             'user': email,
             'domain': current_site.domain,
@@ -141,6 +144,42 @@ def forgot_password_page(request):
         )
         email.fail_silently = False
         email.send()
+
+        """
+
+        # Email for Outlook
+        current_site = get_current_site(request)
+        outlook_subject = "Reset Your Password."
+        outlook_from_email = "Course 101 <" + settings.OUTLOOK_HOST_USER +">"
+        outlook_message = render_to_string('reset-password-email.html', {
+            'user': email,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(email)),
+            'token': app_token_generator.make_token(email),
+        })
+
+        outlook_host = settings.OUTLOOK_HOST
+        outlook_username = settings.OUTLOOK_HOST_USER
+        outlook_password = settings.OUTLOOK_HOST_PASSWORD
+        outlook_port = settings.OUTLOOK_PORT
+
+        outlookemail = EmailSender(
+            host=outlook_host,
+            port=outlook_port,
+            username=outlook_username,
+            password=outlook_password,
+            cls_smtp=SMTP,
+            use_starttls=True
+        )
+
+        outlookemail.send(
+            subject=outlook_subject,
+            sender=outlook_from_email,
+            receivers=[email],
+            text=outlook_message
+        )
+
+        """
 
         messages.success(request, "Email sent successfully. Check your inbox.")
 
