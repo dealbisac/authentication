@@ -1,3 +1,4 @@
+from base64 import urlsafe_b64decode
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User
@@ -6,7 +7,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from auth import settings
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage, send_mail
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from accounts.tokens import app_token_generator
+from django.contrib.auth.hashers import make_password
 
 
 User = get_user_model()
@@ -47,7 +54,7 @@ def signup_page(request):
         user.set_password(password)
         user.save()
 
-        messages.success(request, "Account created successfully.")
+        messages.success(request, "Account created successfully. You can now login.")
 
         # Email Message to user
         subject = "Welcome to Course 101"
@@ -102,15 +109,82 @@ def profile_page(request):
     context = {'page' : 'Profile'}
     return render(request, 'profile.html', context)
 
-def edit_profile_page(request):
-    return HttpResponse("Hello from edit profile view")
 
 def forgot_password_page(request):
     context = {'page' : 'Forgot Password'}
+    email_template_name = 'reset-password-email.html'
+
+    # data from form
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        # check if email exists in database
+        if not User.objects.filter(email=email).exists():
+            messages.error(request, "Invalid email. Provide your student email registered with us.")
+            return redirect('/forgot-password/')
+        
+        # send email to user with reset password link
+        current_site = get_current_site(request)
+        subject = "Reset Your Password."
+        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+        message = render_to_string('reset-password-email.html', {
+            'user': email,
+            'domain': current_site.domain,
+            'uid': urlsafe_base64_encode(force_bytes(email)),
+            'token': app_token_generator.make_token(email),
+        })
+
+        email = EmailMessage(
+            subject, 
+            message,
+            from_email,
+            to=[email]
+        )
+        email.fail_silently = False
+        email.send()
+
+        messages.success(request, "Email sent successfully. Check your inbox.")
+
+        # redirect to sign in page.
+        return redirect('/forgot-password/')
+
+
     return render(request, 'forgot-password.html', context)
 
-def reset_password_page(request):
+
+def reset_password_page(request, uidb64, token):
     context = {'page' : 'Reset Password'}
+
+    try:
+        email = force_str(urlsafe_b64decode(uidb64))
+        user = User.objects.get(email=email)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    # data from form
+    if request.method == 'POST':
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirm-password')
+
+        if password != confirm_password:
+            messages.error(request, "Password and Confirm Password do not match.")
+            return redirect('/reset-password/'+uidb64+'/'+token)
+        
+        # user.set_password(password)
+        user.password = make_password('password')
+        user.save()
+
+        messages.success(request, "Password reset successfully. You can now login.")
+
+        # email to user
+        subject = "Password Reset Successfully."
+        message = "Hi " + user.username + ",\n\nYour password has been reset successfully. You can now login with your new password. \n\nRegards,\nCourse 101 Team"
+        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+        to_email = [email]
+        send_mail(subject, message, from_email, to_email, fail_silently=False)
+
+        # redirect to sign in page.
+        return redirect('/login/')
     return render(request, 'reset-password.html', context)
 
 def change_password_page(request):
