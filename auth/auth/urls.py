@@ -38,8 +38,7 @@ urlpatterns = [
     path('login/', login_page, name='login'),
     path('logout/', logout_page, name='logout'),
     path('profile/', profile_page, name='profile'),
-    path('edit-profile/', edit_profile_page, name='edit-profile'),
     path('forgot-password/', forgot_password_page, name='forgot-password'),
-    path('reset-password/', reset_password_page, name='reset-password'),
+    path('reset-password/<uidb64>/<token>', reset_password_page, name='reset-password'),
     path('dashboard/', admin_page, name='admin-page'),
 ]
