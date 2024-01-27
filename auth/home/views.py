@@ -15,6 +15,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from accounts.tokens import app_token_generator
 from redmail import outlook, EmailSender
+from . models import *
 
 User = get_user_model()
 
@@ -27,22 +28,26 @@ def home(request):
     return render(request, 'index.html', context)
 
 
-
 # Sign up page view
 def signup_page(request, uidb64, token):
-    context = {'page' : 'Sign Up'}
+    context = {'page' : 'Sign Up', }
 
     # data from url
     try:
-        email = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(email=email)
+        invitedemail = force_str(urlsafe_base64_decode(uidb64))
+        invitedUser = Invite.objects.get(email=invitedemail)
 
-        if not app_token_generator.check_token(user, token):
-            messages.error(request, "Invalid token.")
-            return redirect('/signup/')
+        # send email as context to sign up page
+        context['invitedemail'] = invitedUser.email
+
+        # check if token is valid
+        # if not app_token_generator.check_token(invitedUser.token, token):
+        #     messages.error(request, "Invalid token.")
+        #     return redirect('/signup/'+uidb64+'/'+token)
         
        # get data from form to save to database
         if request.method == 'POST':
+            email = request.POST.get('email')
             anonymousname = request.POST.get('anonymousname')
             password = request.POST.get('password')
             confirm_password = request.POST.get('confirm-password')
@@ -52,16 +57,21 @@ def signup_page(request, uidb64, token):
                 messages.error(request, "Password and Confirm Password do not match.")
                 return redirect('/signup/'+uidb64+'/'+token)
             
-            # username already exists 
+            # username already exists in database
             if User.objects.filter(username=anonymousname).exists():
                 messages.error(request, "Username already exists.")
+                return redirect('/signup/'+uidb64+'/'+token)
+            
+            # email already exists in database
+            if User.objects.filter(email=email).exists():
+                messages.error(request, "You already have account. In case you forgot your password, you can reset it.")
                 return redirect('/signup/'+uidb64+'/'+token)
             
             # save data to database
             user = User.objects.create(
                 email=email, 
                 username=anonymousname
-                )
+            )
             user.set_password(password)
             user.save()
             
@@ -273,41 +283,46 @@ def reset_password_page(request, uidb64, token):
 
     try:
         # data from url (fix: TypeError: a bytes-like object is required, not 'str')
-        email = request.POST.get('email') if request.method == 'POST' else None
+        email = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(email=email)
+
+        # send email as context to reset password page
+        context['email'] = user.email
+
+        # check if token is valid
+        if not app_token_generator.check_token(user, token):
+            messages.error(request, "Invalid token.")
+            return redirect('/reset-password/'+uidb64+'/'+token)
+        
+        # get data from form to save to database
+        if request.method == 'POST':
+            password = request.POST.get('password')
+            confirm_password = request.POST.get('confirm-password')
+
+            # check if passwords match
+            if password != confirm_password:
+                messages.error(request, "Password and Confirm Password do not match.")
+                return redirect('/reset-password/'+uidb64+'/'+token)
+            
+            # save data to database
+            user.set_password(password)
+            user.save()
+            
+            messages.success(request, "Password reset successfully. You can now login.")
+
+            # redirect to sign in page.
+            return redirect('/login/')
+        
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    # data from form
-    if request.method == 'POST':
-        password = request.POST.get('password')
-        confirm_password = request.POST.get('confirm-password')
-
-        if password != confirm_password:
-            messages.error(request, "Password and Confirm Password do not match.")
-            return redirect('/reset-password/'+uidb64+'/'+token)
-
-        
-        # save data to database
-        user.set_password(password)
-        user.save()
-
-        messages.success(request, "Password reset successfully. You can now login.")
-
-        # email to user
-        subject = "Password Reset Successfully."
-        message = "Hi " + user.username + ",\n\nYour password has been reset successfully. You can now login with your new password. \n\nRegards,\nCourse 101 Team"
-        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
-        to_email = [email]
-        send_mail(subject, message, from_email, to_email, fail_silently=False)
-
-        # redirect to sign in page.
-        return redirect('/login/')
     return render(request, 'reset-password.html', context)
+
 
 @login_required(login_url='/login/')
 def change_password_page(request):
     return HttpResponse("Hello from change password view")
+
 
 @login_required(login_url='/login/')
 def admin_page(request):
@@ -357,6 +372,13 @@ def users_page(request):
             )
             email.fail_silently = False
             email.send()
+
+            # save data to database
+            invite = Invite.objects.create(
+                email=recipient, 
+                token=app_token_generator.make_token(recipient)
+            )
+            invite.save()
 
         messages.success(request, "All users have been invited.")
 
