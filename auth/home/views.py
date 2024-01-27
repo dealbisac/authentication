@@ -218,7 +218,7 @@ def forgot_password_page(request):
         current_site = get_current_site(request)
         subject = "Reset Your Password."
         from_email = "Course 101 < no-reply@chattutor.dk >"
-        message = render_to_string('reset-password-email.html', {
+        message = render_to_string('email/reset-password-email.html', {
             'user': email,
             'domain': current_site.domain,
             'uid': urlsafe_base64_encode(force_bytes(email)),
@@ -358,7 +358,7 @@ def users_page(request):
         message = messagetemplate if messageoptional is None else messageoptional
 
         for recipient in recipients:
-            message = render_to_string('invite-users-email.html', {
+            message = render_to_string('email/invite-users-email.html', {
                 'user': recipient,
                 'domain': current_site.domain,
                 'uid': urlsafe_base64_encode(force_bytes(recipient)),
