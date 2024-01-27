@@ -34,7 +34,7 @@ urlpatterns = [
 
     # home app urls
     path('', home, name='home'),
-    path('signup/', signup_page, name='signup'),
+    path('signup/<uidb64>/<token>', signup_page, name='signup'),
     path('login/', login_page, name='login'),
     path('logout/', logout_page, name='logout'),
     path('profile/', profile_page, name='profile'),
