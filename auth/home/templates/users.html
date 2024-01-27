@@ -28,20 +28,34 @@
                             data-bs-dismiss="modal"
                             aria-label="Close"></button>
                 </div>
+
+                {% if messages %}
+                <div class="alert alert-primary"
+                     role="alert">
+                    {% for message in messages %}
+                    {{ message }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+
                 <div class="modal-body">
-                    <form>
+                    <form name="inviteform"
+                          method="post">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label for="recipient-name"
                                    class="col-form-label">Recipients:</label>
                             <input type="text"
                                    class="form-control"
-                                   id="recipient-name">
+                                   id="recipients-email"
+                                   name="recipientsEmail">
                         </div>
                         <div class="mb-3">
                             <label for="message-text"
                                    class="col-form-label">Type your customized message here (optional):</label>
                             <textarea class="form-control"
-                                      id="message-text"></textarea>
+                                      id="message-text"
+                                      name="messageText"></textarea>
                         </div>
                     </form>
                 </div>
