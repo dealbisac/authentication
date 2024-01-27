@@ -3,13 +3,24 @@
 {% block title %}Users{% endblock %}
 
 {% block content %}
-<div class="container pt-5">
 
+<!-- Invite messages -->
+{% if messages %}
+<div class="alert alert-primary"
+     role="alert">
+    {% for message in messages %}
+    {{ message }}
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Invite users to the platform -->
+<div class="container pt-5">
     <button type="button"
             class="btn btn-primary"
             data-bs-toggle="modal"
             data-bs-target="#exampleModal"
-            data-bs-whatever="@getbootstrap">
+            data-bs-whatever="Invite Users">
         Invite Users
     </button>
 
@@ -29,18 +40,10 @@
                             aria-label="Close"></button>
                 </div>
 
-                {% if messages %}
-                <div class="alert alert-primary"
-                     role="alert">
-                    {% for message in messages %}
-                    {{ message }}
-                    {% endfor %}
-                </div>
-                {% endif %}
-
                 <div class="modal-body">
                     <form name="inviteform"
-                          method="post">
+                          method="post"
+                          enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label for="recipient-name"
@@ -57,13 +60,57 @@
                                       id="message-text"
                                       name="messageText"></textarea>
                         </div>
-                    </form>
                 </div>
-                <div class="btn btn-primary m-3 border-radius-3">
-                    <button type="submit"
-                            class="btn btn-primary">Send Invitation</button>
+
+                <button type="submit"
+                        class="btn btn-primary m-3 border-radius-3">Send Invitation</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Show list of users in the database -->
+    <div class="section pt-4">
+        <div class="section-title">Users</div>
+        <div class="row">
+            {% for user in users %}
+            <div class="col-lg-3 col-md-4 col-sm-12">
+                <div class="card card-user">
+                    <div class="card-body">
+                        <div class="author">
+                            <a href="#">
+                                <img class="avatar border-gray"
+                                     src="{{ user.profile.image.url }}"
+                                     alt="...">
+                                <h5 class="title">{{ user.username }}</h5>
+                            </a>
+                            <p class="description">
+                                {{ user.profile.bio }}
+                            </p>
+                        </div>
+                        <p class="description text-center">
+                            {{ user.profile.location }}
+                        </p>
+                    </div>
+                    <div class="card-footer">
+                        <hr>
+                        <div class="button-container">
+                            <div class="row">
+                                <div class="col-lg-6 col-md-6 col-6 ml-auto">
+                                    <h5>Email</h5>
+                                    <small>{{ user.email }}</small>
+                                </div>
+                                <div class="col-lg-6 mr-auto">
+                                    <h5>Superuser</h5>
+                                    <small>{{ user.is_superuser }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
     </div>
 
