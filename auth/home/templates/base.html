@@ -15,8 +15,12 @@
             crossorigin="anonymous">
 
       <!-- Custom styles for this template -->
+      {% block extra_css %}
       <link href="{% static 'css/style.css' %}"
             rel="stylesheet">
+
+      {% endblock %}
+
 
       <!-- Bootstrap core JavaScript -->
       <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
@@ -51,6 +55,10 @@
                               <li class="nav-item">
                                     <a class="nav-link"
                                        href="#">Courses</a>
+                              </li>
+                              <li class="nav-item">
+                                    <a class="nav-link"
+                                       href="/users/">Users</a>
                               </li>
                               <li class="nav-item">
                                     <a class="nav-link"
