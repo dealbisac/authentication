@@ -1,0 +1,17 @@
+{% autoescape off %}
+
+{% load i18n %}
+
+{% blocktrans %}Hello, User{% endblocktrans %}
+
+{% blocktrans %}You've been invited to join Chat Tutor.{% endblocktrans %}
+
+{% blocktrans %}Please go to the following page and choose a new password:{% endblocktrans %}
+
+Signup Link: http://{{ domain }}{% url 'signup' uidb64=uid token=token %}
+
+{% blocktrans %}Use your student email to signup.{% endblocktrans %}
+
+{% blocktrans %}Thanks for using our site! The {{ site_name }} team {% endblocktrans %}
+
+{% endautoescape %}
