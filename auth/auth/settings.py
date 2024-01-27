@@ -99,13 +99,27 @@ WSGI_APPLICATION = 'auth.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# Postgres Database
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'django-auth',
+        'USER': 'dip',
+        'PASSWORD': 'dip',
+        'HOST': 'localhost',
+        'PORT': '5432',
+    }
+}
+
+'''
+# SQLite3 Default database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+'''
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
