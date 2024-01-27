@@ -186,11 +186,11 @@ def forgot_password_page(request):
         # redirect to sign in page.
         return redirect('/forgot-password/')
 
-
     return render(request, 'forgot-password.html', context)
 
 
 def reset_password_page(request, uidb64, token):
+
     context = {'page' : 'Reset Password'}
 
     try:
@@ -227,6 +227,7 @@ def reset_password_page(request, uidb64, token):
         return redirect('/login/')
     return render(request, 'reset-password.html', context)
 
+@login_required(login_url='/login/')
 def change_password_page(request):
     return HttpResponse("Hello from change password view")
 
@@ -234,3 +235,47 @@ def change_password_page(request):
 def admin_page(request):
     context = {'page' : 'Dashboard'}
     return render(request, 'admin.html', context)
+
+
+@login_required(login_url='/login/')
+def users_page(request):
+    context = {'page' : 'Users'}
+
+    # get all users from database
+    users = User.objects.all()
+    context['users'] = users
+
+    # data from form (Invite Users)
+    if request.method == 'POST':
+        recipientsemail= request.POST.get('recipientsEmail')
+        messageoptional = request.POST.get('messageText')
+
+        # separate if multiple emails from the form
+        recipients = recipientsemail.split(',')
+        recipients = [recipient.strip() for recipient in recipients]
+
+        # send email to user for sign up to join course.
+        current_site = get_current_site(request)
+        subject = "Welcome to Course 101"
+        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+        messagetemplate = "Hi,\n\nYou have been invited to join Course 101. Please sign up to join the course. \n\nRegards,\nCourse 101 Team"
+
+        #if messageoptional is null then use default message
+        message = messagetemplate if messageoptional is None else messageoptional
+
+        for recipient in recipients:
+            message = render_to_string('invite-users-email.html', {
+                'user': recipient,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(recipient)),
+                'token': app_token_generator.make_token(recipient),
+                'message': message
+            })
+            send_mail(subject, message, from_email, to_email=[recipient], fail_silently=False)
+
+        messages.success(request, "All users have been invited. Close this window now.")
+
+        # redirect to sign in page.
+        return redirect('/users/')
+
+    return render(request, 'users.html', context)
