@@ -358,6 +358,11 @@ def users_page(request):
         message = messagetemplate if messageoptional is None else messageoptional
 
         for recipient in recipients:
+            # check if email already exists in database
+            if User.objects.filter(email=recipient).exists():
+                messages.error(request, "The account already exists in the database.")
+                return redirect('/users/')
+            
             message = render_to_string('email/invite-users-email.html', {
                 'user': recipient,
                 'domain': current_site.domain,
