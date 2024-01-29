@@ -344,6 +344,14 @@ def users_page(request):
         recipientsemail= request.POST.get('recipientsEmail')
         messageoptional = request.POST.get('messageText')
 
+        # also generate a random username for the user which will sent to them in the email with link. and come up while signup
+        # generate using the random module in python and save it to database
+        username = "randomusername"
+
+        # also get the semester data from the form and save it to database
+        semester = "semester"
+        
+        
         # separate if multiple emails from the form
         recipients = recipientsemail.split(',')
         recipients = [recipient.strip() for recipient in recipients]
