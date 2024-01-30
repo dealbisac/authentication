@@ -38,7 +38,8 @@ def signup_page(request, uidb64, token):
     # data from url
     try:
         invitedemail = force_str(urlsafe_base64_decode(uidb64))
-        invitedUser = Invite.objects.get(email=invitedemail)
+        invitedUserEmail = Invite.objects.get(email=invitedemail)
+
 
         # send email as context to sign up page
         context['invitedemail'] = invitedUser.email
@@ -349,15 +350,17 @@ def users_page(request):
 
         # also generate a random username for the user which will sent to them in the email with link. and come up while signup
         # generate using the random module in python and save it to database
-        anonymousname = customhelpers.get_string(5, 5)
+        randomusername = customhelpers.generate_random_username()
 
         # check if username already exists in database and generate another one if it does
-        while User.objects.filter(username=anonymousname).exists():
-            anonymousname = customhelpers.get_string(5, 5)
+        while User.objects.filter(anonymousname=randomusername).exists():
+            anonymousname = customhelpers.generate_random_username()
 
         # also get the semester data from the form and save it to database
         course = "Course 101"
 
+        # set preapproval to true
+        preapproval = True
         
         # separate if multiple emails from the form
         recipients = recipientsemail.split(',')
@@ -375,7 +378,7 @@ def users_page(request):
         for recipient in recipients:
             # check if email already exists in database
             if User.objects.filter(email=recipient).exists():
-                messages.error(request, "The account already exists in the database.")
+                messages.error(request, "The email : " + recipient + "already exists in the database.")
                 return redirect('/users/')
             
             message = render_to_string('email/invite-users-email.html', {
@@ -396,7 +399,10 @@ def users_page(request):
 
             # save data to database
             invite = Invite.objects.create(
-                email=recipient, 
+                email=recipient,
+                username=randomusername,
+                course=course,
+                preapproval=preapproval,
                 token=app_token_generator.make_token(recipient)
             )
             invite.save()
