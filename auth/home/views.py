@@ -15,7 +15,10 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from accounts.tokens import app_token_generator
 from redmail import outlook, EmailSender
+
+from home import customhelpers
 from . models import *
+
 
 User = get_user_model()
 
@@ -346,11 +349,15 @@ def users_page(request):
 
         # also generate a random username for the user which will sent to them in the email with link. and come up while signup
         # generate using the random module in python and save it to database
-        username = "randomusername"
+        anonymousname = customhelpers.get_string(5, 5)
+
+        # check if username already exists in database and generate another one if it does
+        while User.objects.filter(username=anonymousname).exists():
+            anonymousname = customhelpers.get_string(5, 5)
 
         # also get the semester data from the form and save it to database
-        semester = "semester"
-        
+        course = "Course 101"
+
         
         # separate if multiple emails from the form
         recipients = recipientsemail.split(',')
@@ -358,9 +365,9 @@ def users_page(request):
 
         # send email to user for sign up to join course.
         current_site = get_current_site(request)
-        subject = "Welcome to Course 101"
-        from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
-        messagetemplate = "Hi,\n\nYou have been invited to join Course 101. Please sign up to join the course. \n\nRegards,\nCourse 101 Team"
+        subject = "Welcome to " + course + "."
+        from_email = course + settings.EMAIL_HOST_USER
+        messagetemplate = "Hi,\n\nYou have been invited to join" + course + "Please sign up to join the course. \n\nRegards,\n" + course + "Team"
 
         #if messageoptional is null then use default message
         message = messagetemplate if messageoptional is None else messageoptional
@@ -376,6 +383,7 @@ def users_page(request):
                 'domain': current_site.domain,
                 'uid': urlsafe_base64_encode(force_bytes(recipient)),
                 'token': app_token_generator.make_token(recipient)
+
             })
             email = EmailMessage(
                 subject, 
@@ -399,3 +407,16 @@ def users_page(request):
         return redirect('/users/')
 
     return render(request, 'users.html', context)
+
+
+@login_required(login_url='/login/')
+def students_page(request):
+    context = {'page' : 'Students'}
+    return render(request, 'students.html', context)
+
+
+@login_required(login_url='/login/')
+def courses_page(request):
+    context = {'page' : 'Courses'}
+    return render(request, 'courses.html', context)
+
