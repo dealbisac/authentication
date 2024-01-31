@@ -18,11 +18,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_USE_TLS = EMAIL_USE_TLS
-EMAIL_HOST = EMAIL_HOST
-EMAIL_HOST_USER = EMAIL_HOST_USER
-EMAIL_HOST_PASSWORD = EMAIL_APP_PASSWORD
-EMAIL_PORT = EMAIL_PORT
+EMAIL_USE_TLS = ONECOM_USE_TLS
+EMAIL_HOST = ONECOM_HOST
+EMAIL_HOST_USER = ONECOM_HOST_USER
+EMAIL_HOST_PASSWORD = ONECOM_HOST_PASSWORD
+EMAIL_PORT = ONECOM_PORT
 
 #Outlook Settings
 OUTLOOK_USE_TLS = OUTLOOK_USE_TLS
@@ -30,6 +30,14 @@ OUTLOOK_HOST = OUTLOOK_HOST
 OUTLOOK_HOST_USER = OUTLOOK_HOST_USER
 OUTLOOK_HOST_PASSWORD = OUTLOOK_HOST_PASSWORD
 OUTLOOK_PORT = OUTLOOK_PORT
+
+#One.com Settings
+ONECOM_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+ONECOM_USE_TLS = ONECOM_USE_TLS
+ONECOM_HOST = ONECOM_HOST
+ONECOM_HOST_USER = ONECOM_HOST_USER
+ONECOM_HOST_PASSWORD = ONECOM_HOST_PASSWORD
+ONECOM_PORT = ONECOM_PORT
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
@@ -44,7 +52,7 @@ ALLOWED_HOSTS = []
 
 
 # Custom user model
-AUTH_USER_MODEL = 'accounts.CustomUser'
+AUTH_USER_MODEL = 'accounts.User'
 
 
 # Application definition
