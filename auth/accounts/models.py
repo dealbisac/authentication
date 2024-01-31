@@ -3,16 +3,89 @@ from django.contrib.auth.models import AbstractUser, AbstractBaseUser, Permissio
 
 # Create your models here.
 
-class CustomUser(AbstractUser):
+class User(AbstractUser):
     email = models.EmailField(unique=True)
     username = models.CharField(max_length=100, unique=True)
+    semester = models.CharField(max_length=100)
+    course = models.CharField(max_length=100)
+    preapproval = models.BooleanField(default=False)
     user_image = models.ImageField(upload_to='user_images/', blank=True)
+    role = models.CharField(max_length=100, default='student')
     password = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    
     USERNAME_FIELD = 'email'
+    EMAIL_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'password']
+    
+    def __str__(self):
+        return self.email
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    class Meta:
+        verbose_name = 'User'
+        verbose_name_plural = 'Users'
+        
+    def __str__(self):
+        return self.email
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+    
+    def get_full_name(self):
+        return self.name or self.username
+    
+    def get_short_name(self):
+        return self.name or self.email.split('@')[0] or self.username
+
+    
+
+
 
 """
 class CustomUserManager(UserManager):
@@ -64,19 +137,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = CustomUserManager()
 
 """
-
-class Meta:
-    verbose_name = 'User'
-    verbose_name_plural = 'Users'
-
-    def __str__(self):
-        return self.email
-    
-    def get_full_name(self):
-        return self.name or self.username
-    
-    def get_short_name(self):
-        return self.name or self.email.split('@')[0] or self.username
     
     
     
