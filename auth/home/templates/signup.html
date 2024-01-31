@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'headers/auth-header.html' %}
 
 {% block content %}
 
@@ -40,10 +40,12 @@
                             class="form-control"
                             id="anonymousname"
                             name="anonymousname"
+                            value="{{ invitedusername }}"
                             aria-describedby="nameHelp">
                      <div id="anonymousnameHelp"
                           class="form-text">We strongly recommend that you use anonymous name. This will help secure
-                            your identity and help you safely learn and explore.</div>
+                            your identity and help you safely learn and explore. You can change this username later in
+                            your profile.</div>
               </div>
               <div class="mb-3">
                      <label for="InputPassword1"
