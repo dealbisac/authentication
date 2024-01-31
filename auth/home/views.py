@@ -15,10 +15,10 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from accounts.tokens import app_token_generator
 from redmail import outlook, EmailSender
+from django.contrib.auth.hashers import make_password 
 
 from home import customhelpers
 from . models import *
-
 
 User = get_user_model()
 
@@ -40,19 +40,19 @@ def signup_page(request, uidb64, token):
         invitedemail = force_str(urlsafe_base64_decode(uidb64))
         invitedUserEmail = Invite.objects.get(email=invitedemail)
 
+        # check if token is valid using the correct email from the database
+        if not app_token_generator.check_token(invitedUserEmail.email, token):
+            messages.error(request, "Invalid token.")
+            return redirect('/signup/'+uidb64+'/'+token)
 
         # send email as context to sign up page
-        context['invitedemail'] = invitedUser.email
-
-        # check if token is valid
-        # if not app_token_generator.check_token(invitedUser.token, token):
-        #     messages.error(request, "Invalid token.")
-        #     return redirect('/signup/'+uidb64+'/'+token)
+        context['invitedemail'] = invitedUserEmail.email
+        context['invitedusername'] = invitedUserEmail.username
         
        # get data from form to save to database
         if request.method == 'POST':
             email = request.POST.get('email')
-            anonymousname = request.POST.get('anonymousname')
+            username = request.POST.get('anonymousname')
             password = request.POST.get('password')
             confirm_password = request.POST.get('confirm-password')
 
@@ -61,29 +61,22 @@ def signup_page(request, uidb64, token):
                 messages.error(request, "Password and Confirm Password do not match.")
                 return redirect('/signup/'+uidb64+'/'+token)
             
-            # username already exists in database
-            if User.objects.filter(username=anonymousname).exists():
-                messages.error(request, "Username already exists.")
-                return redirect('/signup/'+uidb64+'/'+token)
-            
-            # email already exists in database
-            if User.objects.filter(email=email).exists():
-                messages.error(request, "You already have account. In case you forgot your password, you can reset it.")
-                return redirect('/signup/'+uidb64+'/'+token)
-            
             # save data to database
             user = User.objects.create(
                 email=email, 
-                username=anonymousname
+                username=username,
+                course = invitedUserEmail.course,
+                role = invitedUserEmail.role,
+                preapproval = invitedUserEmail.preapproval
             )
             user.set_password(password)
             user.save()
             
             messages.success(request, "Account created successfully. You can now login.")
 
-            # Email Message to user
+            # Email Message to Student
             subject = "Welcome to Course 101"
-            message = "Hi " + anonymousname + ",\n\nWelcome to Course 101. We are glad to have you here. \n\nRegards,\nCourse 101 Team"
+            message = "Hi " + username + ",\n\nWelcome to Course 101. We are glad to have you here. \n\nRegards,\nCourse 101 Team"
             from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
             to_email = [email]
             send_mail(subject, message, from_email, to_email, fail_silently=False)
@@ -93,44 +86,6 @@ def signup_page(request, uidb64, token):
 
     except(TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
-
-    # # data from form
-    # if request.method == 'POST':
-    #     email = request.POST.get('email')
-    #     anonymousname = request.POST.get('anonymousname')
-    #     password = request.POST.get('password')
-
-    #     # check if email or username already exists
-    #     if User.objects.filter(email=email).exists():
-    #         messages.error(request, "Email already exists.")
-    #         return redirect('/signup/')
-    #     if User.objects.filter(username=anonymousname).exists():
-    #         messages.error(request, "Username already exists.")
-    #         return redirect('/signup/')
-        
-
-        
-    #     # save data to database
-    #     user = User.objects.create(
-    #         email=email, 
-    #         username=anonymousname
-    #     )
-    #     user.set_password(password)
-    #     user.save()
-
-    #     messages.success(request, "Account created successfully. You can now login.")
-
-    #     # Email Message to user
-    #     subject = "Welcome to Course 101"
-    #     message = "Hi " + anonymousname + ",\n\nWelcome to Course 101. We are glad to have you here. \n\nRegards,\nCourse 101 Team"
-    #     #from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
-    #     from_email = "Course 101 < no-reply@chattutor.dk >"
-    #     to_email = [email]
-    #     send_mail(subject, message, from_email, to_email, fail_silently=False)
-
-
-    #     # redirect to sign in page.
-    #     return redirect('/signup/')
 
     return render(request, 'signup.html', context)
 
@@ -142,21 +97,21 @@ def login_page(request):
     # data from form
     if request.method == 'POST':
         email = request.POST.get('email')
-        password = request.POST.get('password')
+        formpassword = request.POST.get('password')
 
-        # check if email exists in database
+        # check if email exists in database of any students or teachers or users table
         if not User.objects.filter(email=email).exists():
             messages.error(request, "Invalid email. Use your own student email.")
             return redirect('/login/')
         
-        # authenticate user
-        user = authenticate(email=email, password=password)
+        # authenticate user using email and password
+        validUser = authenticate(email=email, password=formpassword)
 
-        if user is None:
+        if validUser is None:
             messages.error(request, "Invalid credentials.")
             return redirect('/login/')
         else:
-            login(request, user)
+            login(request, validUser)
             return redirect('/dashboard/')
         
     return render(request, 'signin.html', context)
@@ -180,22 +135,24 @@ def profile_page(request):
     # data from form (Use this to save data to database)
     if request.method == 'POST':
         username = request.POST.get('username')
+        anonymousname = request.POST.get('anonymousname')
         email = request.POST.get('email')
 
-        # check if email or username already exists
+        # check if email or anonymousname already exists
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already exists.")
             return redirect('/profile/')
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(anonymousname=anonymousname).exists():
             messages.error(request, "Username already exists.")
             return redirect('/profile/')
         
         # save data to database
-        user = User.objects.create(
+        student = User.objects.create(
             username=username, 
+            anonymousname=anonymousname,
             email=email
         )
-        user.save()
+        student.save()
 
         messages.success(request, "Profile updated successfully.")
 
@@ -218,10 +175,13 @@ def forgot_password_page(request):
             messages.error(request, "Invalid email. Provide your student email registered with us.")
             return redirect('/forgot-password/')
         
+        # get course name from database
+        course = User.objects.get(email=email).course
+        
         # send email to user with reset password link
         current_site = get_current_site(request)
         subject = "Reset Your Password."
-        from_email = "Course 101 < no-reply@chattutor.dk >"
+        from_email = course + settings.EMAIL_HOST_USER
         message = render_to_string('email/reset-password-email.html', {
             'user': email,
             'domain': current_site.domain,
@@ -288,13 +248,13 @@ def reset_password_page(request, uidb64, token):
     try:
         # data from url (fix: TypeError: a bytes-like object is required, not 'str')
         email = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(email=email)
+        student = User.objects.get(email=email)
 
         # send email as context to reset password page
-        context['email'] = user.email
+        context['email'] = student.email
 
         # check if token is valid
-        if not app_token_generator.check_token(user, token):
+        if not app_token_generator.check_token(student.email, token):
             messages.error(request, "Invalid token.")
             return redirect('/reset-password/'+uidb64+'/'+token)
         
@@ -309,16 +269,16 @@ def reset_password_page(request, uidb64, token):
                 return redirect('/reset-password/'+uidb64+'/'+token)
             
             # save data to database
-            user.set_password(password)
-            user.save()
+            student.password = make_password('password')
+            student.save()
             
             messages.success(request, "Password reset successfully. You can now login.")
 
             # redirect to sign in page.
             return redirect('/login/')
         
-    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None
+    except(TypeError, ValueError, OverflowError, Student.DoesNotExist):
+        student = None
 
     return render(request, 'reset-password.html', context)
 
@@ -337,7 +297,7 @@ def admin_page(request):
 @login_required(login_url='/login/')
 def users_page(request):
     context = {'page' : 'Users'}
-    email_template_name = 'invite-users-email.html'
+    email_template_name = 'email/invite-users-email.html'
 
     # data from database (Users)
     users = User.objects.all()
@@ -348,19 +308,14 @@ def users_page(request):
         recipientsemail= request.POST.get('recipientsEmail')
         messageoptional = request.POST.get('messageText')
 
-        # also generate a random username for the user which will sent to them in the email with link. and come up while signup
-        # generate using the random module in python and save it to database
-        randomusername = customhelpers.generate_random_username()
-
-        # check if username already exists in database and generate another one if it does
-        while User.objects.filter(anonymousname=randomusername).exists():
-            anonymousname = customhelpers.generate_random_username()
-
         # also get the semester data from the form and save it to database
         course = "Course 101"
 
         # set preapproval to true
         preapproval = True
+
+        # set the role to student
+        role = "student"
         
         # separate if multiple emails from the form
         recipients = recipientsemail.split(',')
@@ -380,6 +335,13 @@ def users_page(request):
             if User.objects.filter(email=recipient).exists():
                 messages.error(request, "The email : " + recipient + "already exists in the database.")
                 return redirect('/users/')
+            
+            # generate random username for each user invited and check if it already exists in database
+            randomusername = customhelpers.generate_random_username()
+            if User.objects.filter(username=randomusername).exists():
+                while User.objects.filter(username=randomusername).exists():
+                    randomusername = customhelpers.generate_random_username()
+
             
             message = render_to_string('email/invite-users-email.html', {
                 'user': recipient,
@@ -403,6 +365,7 @@ def users_page(request):
                 username=randomusername,
                 course=course,
                 preapproval=preapproval,
+                role=role,
                 token=app_token_generator.make_token(recipient)
             )
             invite.save()
