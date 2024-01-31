@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'headers/base-header.html' %}
 
 {% block title %}Users{% endblock %}
 
@@ -71,27 +71,27 @@
         </div>
     </div>
 
-    <!-- Show list of users in the database -->
+    <!-- Show list of invited users -->
     <div class="section pt-4">
-        <div class="section-title">Users</div>
+        <div class="section-title">Invited Users</div>
         <div class="row">
-            {% for user in users %}
+            {% for inviteduser in invitedusers %}
             <div class="col-lg-3 col-md-4 col-sm-12">
                 <div class="card card-user">
                     <div class="card-body">
                         <div class="author">
                             <a href="#">
                                 <img class="avatar border-gray"
-                                     src="{{ user.profile.image.url }}"
+                                     src="{{ inviteduser.profile.image.url }}"
                                      alt="...">
-                                <h5 class="title">{{ user.username }}</h5>
+                                <h5 class="title">{{ inviteduser.username }}</h5>
                             </a>
                             <p class="description">
-                                {{ user.profile.bio }}
+                                {{ inviteduser.profile.bio }}
                             </p>
                         </div>
                         <p class="description text-center">
-                            {{ user.profile.location }}
+                            {{ inviteduser.profile.location }}
                         </p>
                     </div>
                     <div class="card-footer">
@@ -100,11 +100,11 @@
                             <div class="row">
                                 <div class="col-lg-6 col-md-6 col-6 ml-auto">
                                     <h5>Email</h5>
-                                    <small>{{ user.email }}</small>
+                                    <small>{{ inviteduser.email }}</small>
                                 </div>
                                 <div class="col-lg-6 mr-auto">
                                     <h5>Superuser</h5>
-                                    <small>{{ user.is_superuser }}</small>
+                                    <small>{{ inviteduser.is_superuser }}</small>
                                 </div>
                             </div>
                         </div>
@@ -113,8 +113,48 @@
             </div>
             {% endfor %}
         </div>
-    </div>
 
-</div>
+        <!-- Show list of users in the database with option to delete and edit the user.-->
+        <div class="section pt-4">
+            <div class="section-title">Users</div>
+            <div class="row">
+                {% for user in users %}
+                <div class="col-lg-3 col-md-4 col-sm-12">
+                    <div class="card card-user">
+                        <div class="card-body">
+                            <div class="author">
+                                <a href="#">
+                                    <img class="avatar border-gray"
+                                         src="{{ user.profile.image.url }}"
+                                         alt="...">
+                                    <h5 class="title">{{ user.username }}</h5>
+                                </a>
+                                <p class="description">
+                                    {{ user.profile.bio }}
+                                </p>
+                            </div>
+                            <p class="description text-center">
+                                {{ user.profile.location }}
+                            </p>
+                        </div>
+                        <div class="card-footer">
+                            <hr>
+                            <div class="button-container">
+                                <div class="row">
+                                    <div class="col-lg-6 col-md-6 col-6 ml-auto">
+                                        <h5>Email</h5>
+                                        <small>{{ user.email }}</small>
+                                    </div>
+                                    <div class="col-lg-6 mr-auto">
+                                        <h5>Superuser</h5>
+                                        <small>{{ user.is_superuser }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
 
-{% endblock %}
+            {% endblock %}
