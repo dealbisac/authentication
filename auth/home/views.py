@@ -8,15 +8,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from auth import settings
-from django.core.mail import EmailMessage, send_mail, send_mass_mail
+from django.core.mail import EmailMessage, send_mail
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from accounts.tokens import app_token_generator
-from redmail import outlook, EmailSender
-from django.contrib.auth.hashers import make_password 
-
 from home import customhelpers
 from . models import *
 
@@ -92,26 +89,25 @@ def signup_page(request, uidb64, token):
 
 # Sign in (Login) page view
 def login_page(request):
-    context = {'page' : 'Sign'}
+    context = {'page' : 'SignIn'}
 
     # data from form
     if request.method == 'POST':
         email = request.POST.get('email')
-        formpassword = request.POST.get('password')
+        password = request.POST.get('password')
 
-        # check if email exists in database of any students or teachers or users table
+        # check if email exists in database
         if not User.objects.filter(email=email).exists():
             messages.error(request, "Invalid email. Use your own student email.")
             return redirect('/login/')
         
-        # authenticate user using email and password
-        validUser = authenticate(email=email, password=formpassword)
-
-        if validUser is None:
+        # authenticate user
+        user = authenticate(email=email, password=password)
+        if user is None:
             messages.error(request, "Invalid credentials.")
             return redirect('/login/')
         else:
-            login(request, validUser)
+            login(request, user)
             return redirect('/dashboard/')
         
     return render(request, 'signin.html', context)
@@ -147,12 +143,12 @@ def profile_page(request):
             return redirect('/profile/')
         
         # save data to database
-        student = User.objects.create(
+        user = User.objects.create(
             username=username, 
             anonymousname=anonymousname,
             email=email
         )
-        student.save()
+        user.save()
 
         messages.success(request, "Profile updated successfully.")
 
@@ -181,7 +177,7 @@ def forgot_password_page(request):
         # send email to user with reset password link
         current_site = get_current_site(request)
         subject = "Reset Your Password."
-        from_email = course + settings.EMAIL_HOST_USER
+        from_email = settings.EMAIL_HOST_USER
         message = render_to_string('email/reset-password-email.html', {
             'user': email,
             'domain': current_site.domain,
@@ -198,42 +194,6 @@ def forgot_password_page(request):
         email.fail_silently = False
         email.send()
 
-        """
-
-        # Email for Outlook
-        current_site = get_current_site(request)
-        outlook_subject = "Reset Your Password."
-        outlook_from_email = "Course 101 <" + settings.OUTLOOK_HOST_USER +">"
-        outlook_message = render_to_string('reset-password-email.html', {
-            'user': email,
-            'domain': current_site.domain,
-            'uid': urlsafe_base64_encode(force_bytes(email)),
-            'token': app_token_generator.make_token(email),
-        })
-
-        outlook_host = settings.OUTLOOK_HOST
-        outlook_username = settings.OUTLOOK_HOST_USER
-        outlook_password = settings.OUTLOOK_HOST_PASSWORD
-        outlook_port = settings.OUTLOOK_PORT
-
-        outlookemail = EmailSender(
-            host=outlook_host,
-            port=outlook_port,
-            username=outlook_username,
-            password=outlook_password,
-            cls_smtp=SMTP,
-            use_starttls=True
-        )
-
-        outlookemail.send(
-            subject=outlook_subject,
-            sender=outlook_from_email,
-            receivers=[email],
-            text=outlook_message
-        )
-
-        """
-
         messages.success(request, "Email sent successfully. Check your inbox.")
 
         # redirect to sign in page.
@@ -248,13 +208,13 @@ def reset_password_page(request, uidb64, token):
     try:
         # data from url (fix: TypeError: a bytes-like object is required, not 'str')
         email = force_str(urlsafe_base64_decode(uidb64))
-        student = User.objects.get(email=email)
+        user = User.objects.get(email=email)
 
         # send email as context to reset password page
-        context['email'] = student.email
+        context['email'] = user.email
 
         # check if token is valid
-        if not app_token_generator.check_token(student.email, token):
+        if not app_token_generator.check_token(user.email, token):
             messages.error(request, "Invalid token.")
             return redirect('/reset-password/'+uidb64+'/'+token)
         
@@ -269,16 +229,16 @@ def reset_password_page(request, uidb64, token):
                 return redirect('/reset-password/'+uidb64+'/'+token)
             
             # save data to database
-            student.password = make_password('password')
-            student.save()
+            user.set_password(password)
+            user.save()
             
             messages.success(request, "Password reset successfully. You can now login.")
 
             # redirect to sign in page.
             return redirect('/login/')
         
-    except(TypeError, ValueError, OverflowError, Student.DoesNotExist):
-        student = None
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
 
     return render(request, 'reset-password.html', context)
 
