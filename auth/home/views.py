@@ -74,7 +74,7 @@ def signup_page(request, uidb64, token):
             # Email Message to Student
             subject = "Welcome to Course 101"
             message = "Hi " + username + ",\n\nWelcome to Course 101. We are glad to have you here. \n\nRegards,\nCourse 101 Team"
-            from_email = "Course 101 <" + settings.EMAIL_HOST_USER +">"
+            from_email = settings.EMAIL_HOST_USER
             to_email = [email]
             send_mail(subject, message, from_email, to_email, fail_silently=False)
 
@@ -284,7 +284,7 @@ def users_page(request):
         # send email to user for sign up to join course.
         current_site = get_current_site(request)
         subject = "Welcome to " + course + "."
-        from_email = course + settings.EMAIL_HOST_USER
+        from_email = settings.EMAIL_HOST_USER
         messagetemplate = "Hi,\n\nYou have been invited to join" + course + "Please sign up to join the course. \n\nRegards,\n" + course + "Team"
 
         #if messageoptional is null then use default message
@@ -293,7 +293,7 @@ def users_page(request):
         for recipient in recipients:
             # check if email already exists in database
             if User.objects.filter(email=recipient).exists():
-                messages.error(request, "The email : " + recipient + "already exists in the database.")
+                messages.error(request, "The email : " + recipient + " already exists in the database.")
                 return redirect('/users/')
             
             # generate random username for each user invited and check if it already exists in database
