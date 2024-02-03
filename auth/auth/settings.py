@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import os
 from pathlib import Path
-from . info import *
+from dotenv import load_dotenv
+load_dotenv() # take environment variables from .env.
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,11 +21,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 #One.com Settings
-EMAIL_USE_SSL = ONECOM_USE_SSL
-EMAIL_HOST = ONECOM_HOST
-EMAIL_HOST_USER = ONECOM_HOST_USER
-EMAIL_HOST_PASSWORD = ONECOM_HOST_PASSWORD
-EMAIL_PORT = ONECOM_PORT
+EMAIL_USE_SSL = os.getenv('ONECOM_USE_SSL')
+EMAIL_HOST = os.getenv('ONECOM_HOST')
+EMAIL_HOST_USER = os.getenv('ONECOM_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('ONECOM_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('ONECOM_PORT')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
