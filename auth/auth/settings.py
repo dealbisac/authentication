@@ -36,7 +36,9 @@ SECRET_KEY = 'django-insecure-w_9gg=9pvcmew-1=y6+x2sdyp=vjs&wc6c5qk&rqdtsx$#&h^_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'localhost',
+]
 
 
 # Custom user model
