@@ -33,9 +33,6 @@ class User(AbstractUser):
         return self.name or self.email.split('@')[0] or self.username
         
 
-    
-
-
 
 """
 class CustomUserManager(UserManager):
