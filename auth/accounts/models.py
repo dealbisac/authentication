@@ -32,7 +32,8 @@ class User(AbstractUser):
     def get_short_name(self):
         return self.name or self.email.split('@')[0] or self.username
         
-
+    def unque_user_email(self):
+        return self.email
 
 """
 class CustomUserManager(UserManager):
