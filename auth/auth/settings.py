@@ -55,11 +55,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 ]
 
 CUSTOM_APPS = [
     'home',
     'accounts',
+    'api',
 ]
 
 INSTALLED_APPS += CUSTOM_APPS
